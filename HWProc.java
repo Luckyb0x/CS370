@@ -82,12 +82,14 @@ public class HWProc extends MPI_Proc {
         				}
         				taskBuffer[1] = sequence[rank + offset];
         				MPI_Send(taskBuffer, 2, MPI_INT, rank + 1, taskTag, MPI_COMM_WORLD);
+        				System.out.println("COMM " + (rank - 1) + " sent task EMPTY TASK to " + (status.MPI_SOURCE >= 2 && status.MPI_SOURCE <= 4 ? ("COMM " + (status.MPI_SOURCE - 1)) : ("Worker " + (status.MPI_SOURCE - 4))) + " with energy " + taskBuffer[1]);
         				offset = 0;
         			}
         			else { //rank 4 sends to both workers
         				MPI_Recv(emptyMsg, 1, MPI_INT, rank + 4, reqTag, MPI_COMM_WORLD, status);
         				taskBuffer[1] = sequence[rank];
         				MPI_Send(taskBuffer, 2, MPI_INT, rank + 4, taskTag, MPI_COMM_WORLD);
+        				System.out.println("COMM " + (rank - 1) + " sent task EMPTY TASK to " + (status.MPI_SOURCE >= 2 && status.MPI_SOURCE <= 4 ? ("COMM " + (status.MPI_SOURCE - 1)) : ("Worker " + (status.MPI_SOURCE - 4))) + " with energy " + taskBuffer[1]);
         				offset = 0;
         			}
         			//Split/send to its worker
@@ -101,17 +103,18 @@ public class HWProc extends MPI_Proc {
         			}
         			taskBuffer[1] = sequence[rank + offset];
         			MPI_Send(taskBuffer, 2, MPI_INT, rank + 3, taskTag, MPI_COMM_WORLD);
+        			System.out.println("COMM " + (rank - 1) + " sent task EMPTY TASK to " + (status.MPI_SOURCE >= 2 && status.MPI_SOURCE <= 4 ? ("COMM " + (status.MPI_SOURCE - 1)) : ("Worker " + (status.MPI_SOURCE - 4))) + (taskBuffer[1] == -1 ? "" : (" with energy " + taskBuffer[1])));
         			break;
         		}
         		if(taskBuffer[0] == -1) { //if buffer empty send request to left neighbor
         			MPI_Send(emptyMsg, 1, MPI_INT, rank - 1, reqTag, MPI_COMM_WORLD);
         			MPI_Recv(taskBuffer, 2, MPI_INT, rank - 1, taskTag, MPI_COMM_WORLD, status);
-        			System.out.println("COMM " + (rank - 1) + " received task " + (taskBuffer[0] == -2 ? " EMPTY TASK " : taskBuffer[0]) + " from " + (status.MPI_SOURCE == 1 ? "generator" : ("COMM " + (status.MPI_SOURCE - 1))));
+        			System.out.println("COMM " + (rank - 1) + " received task " + (taskBuffer[0] == -2 ? " EMPTY TASK " : taskBuffer[0]) + " from " + (status.MPI_SOURCE == 1 ? "generator" : ("COMM " + (status.MPI_SOURCE - 1))) + (taskBuffer[1] == -1 ? "" : (" with energy " + taskBuffer[1])));
         		}
         		else { //comm has a task, send to requesting neighbor
         			MPI_Recv(emptyMsg, 1, MPI_INT, MPI_ANY_SOURCE, reqTag, MPI_COMM_WORLD, status);
         			MPI_Send(taskBuffer, 2, MPI_INT, status.MPI_SOURCE, taskTag, MPI_COMM_WORLD);
-        			System.out.println("COMM " + (rank - 1) + " sent task " + taskBuffer[0] + " to " + (status.MPI_SOURCE >= 2 && status.MPI_SOURCE <= 4 ? ("COMM " + (status.MPI_SOURCE - 1)) : ("Worker " + (status.MPI_SOURCE - 4))));
+        			System.out.println("COMM " + (rank - 1) + " sent " + taskBuffer[0] + " to " + (status.MPI_SOURCE >= 2 && status.MPI_SOURCE <= 4 ? ("COMM " + (status.MPI_SOURCE - 1)) : ("Worker " + (status.MPI_SOURCE - 4))) + (taskBuffer[1] == -1 ? "" : (" with energy " + taskBuffer[1])));
         			taskBuffer[0] = -1; //set task buffer to empty because we sent it
 
         		}
